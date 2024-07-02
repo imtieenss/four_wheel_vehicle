@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: four_wheel_vehicle
+Description: Description of four_wheel_vehicle
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

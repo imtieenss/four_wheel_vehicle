@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="car_robot">
+
+<!-- Base Link -->
+<link name="base_link">
+</link>
+
+<!--Blue-->
+<material name="blue">
+    <color rgba="0 0 0.8 1"/>
+</material>
+
+
+<!-- chassic -->
+<xacro:property name="chassis_height" value="0.4" />
+<xacro:property name="chassis_widht" value="0.4" />
+<xacro:property name="chassis_depth" value="0.1" />
+
+<!--chassic-->
+<link name="chassis">    
+    <visual>
+        <geometry>
+            <box size="${chassis_height} ${chassis_widht} ${chassis_depth}"/>
+        </geometry>
+    </visual>
+    <collision>
+        <geometry>
+            <box size="${chassis_height} ${chassis_widht} ${chassis_depth}"/>
+        </geometry>            
+    </collision>
+    <inertial>
+        <mass value="1.0"/> <!--[kg]-->
+        <inertia ixx="0.014167" ixy = "0.0" ixz = "0.0" iyy="0.02667" iyz = "0.0" izz="0.014167"/>
+    </inertial>
+</link> 
+<gazebo reference="chassis">
+    <material>Gazebo/Red</material>
+</gazebo>
+
+<joint name="chassis_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+</joint>
+
+
+<!-- wheel -->
+<xacro:property name="wheel_radius" value="0.06" />
+<xacro:property name="wheel_length" value="0.04" />
+   
+    <!-- macro wheel-->
+<xacro:macro name="wheel" params="name reflect_x reflect_y reflect_r reflect_axis">
+    <link name="${name}_wheel">
+        <visual>
+            <geometry>
+                <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+            </geometry>            
+        </collision>
+        <inertial>
+            <mass value="0.3"/> <!--[kg]-->
+            <inertia ixx="0.00031" ixy = "0.0" ixz = "0.0" iyy="0.00031" iyz = "0.0" izz="0.00054"/>
+        </inertial>
+    </link>
+
+    <!--wheel joint-->
+    <joint name="${name}_wheel_joint" type="continuous">
+        <parent link="chassis"/>
+        <child link="${name}_wheel"/>
+        <origin xyz="${reflect_x*chassis_height/2} ${reflect_y*(chassis_widht/2+0.025)} 0" rpy="${reflect_r*1.5707} 0 0"/>
+        <axis xyz="0 0 ${reflect_axis}"/>
+    </joint>
+
+    <!--add transmission to wheel -->
+    <transmission name="${name}_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="${name}_wheel_motor">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="${name}_wheel_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+    </transmission>  
+
+    <gazebo reference="${name}_wheel">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+</xacro:macro>
+
+<!--wheel definition-->
+<xacro:wheel name="front_right" reflect_x="1" reflect_y="-1" reflect_r="1" reflect_axis="-1"/> 
+<xacro:wheel name="front_left" reflect_x="1" reflect_y="1" reflect_r="-1" reflect_axis="1"/> 
+<xacro:wheel name="rear_right" reflect_x="-1" reflect_y="-1" reflect_r="1" reflect_axis="-1"/> 
+<xacro:wheel name="rear_left" reflect_x="-1" reflect_y="1" reflect_r="-1" reflect_axis="1"/> 
+
+
+
+
+<!--plugin gazebo ros control-->
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotNamespace>/</robotNamespace>
+  </plugin>
+</gazebo>
+
+</robot>
+
+
